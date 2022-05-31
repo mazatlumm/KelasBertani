@@ -27,7 +27,6 @@ const windowWidth = parseInt((Dimensions.get('window').width).toFixed(0));
 const windowHeight = parseInt((Dimensions.get('window').height).toFixed(0))-45;
 
 const CekTanah = ({navigation, route}) => {
-
     const [currentDate, setCurrentDate] = useState('');
     const [TimeClock, setTimeClock] = useState('');
     const [IDUser, setIDUser] = useState('');
@@ -40,6 +39,8 @@ const CekTanah = ({navigation, route}) => {
     const [Kelembaban, setKelembaban] = useState('');
     const [PH, setPH] = useState('');
     const [Mikroorganisme, setMikroorganisme] = useState('');
+    const [Salinitas, setSalinitas] = useState('');
+    const [TDS, setTDS] = useState('');
     const [ColorConnected, setColorConnected] = useState('red');
     const [location, setLocation] = useState(null);
     const [errorMsg, setErrorMsg] = useState(null);
@@ -98,6 +99,8 @@ const CekTanah = ({navigation, route}) => {
         kelembaban : Kelembaban,
         ph : PH,
         mikroorganisme : Mikroorganisme,
+        salinitas : Salinitas,
+        tds : TDS,
         get_time : currentDate,
         latitude : Latitude,
         longitude : Longitude,
@@ -182,20 +185,23 @@ const CekTanah = ({navigation, route}) => {
         };
 
         // fetch("https://alicestech.com/kelasbertani/api/cek_tanah/tes_alat?id_device="+id_device, requestOptions)
-        fetch("https://alicestech.com/kelasbertani/api/cek_tanah/tes_alat?id_device=SENSOR001", requestOptions)
+        fetch("http://192.168.2.1/getData", requestOptions)
         .then(response => response.json())
         .then(result => {
             // console.log(result);
             if(result.status == true){
                 setStatusDevice('Terhubung');
                 setColorConnected('#0D986A');
-                setNitrogen(result.result[0].nitrogen);
-                setPhospor(result.result[0].phospor);
-                setKalium(result.result[0].kalium);
-                setSuhu(result.result[0].suhu);
-                setKelembaban(result.result[0].kelembaban);
-                setPH(result.result[0].ph);
-                setMikroorganisme(result.result[0].mikroorganisme);
+                setIDDevice(result.result.id_device);
+                setNitrogen(result.result.nitrogen);
+                setPhospor(result.result.phospor);
+                setKalium(result.result.kalium);
+                setSuhu(result.result.suhu);
+                setKelembaban(result.result.kelembaban);
+                setPH(result.result.ph);
+                setMikroorganisme(result.result.mikroorganisme);
+                setSalinitas(result.result.salinitas);
+                setTDS(result.result.tds);
                 CekTime();
                 console.log('success');
             }
@@ -328,8 +334,8 @@ const CekTanah = ({navigation, route}) => {
             <View style={{paddingHorizontal:20, position:'relative', height:300}}>
                 <Text style={{fontFamily:'Poppins-Regular', fontSize:12}}>Nama Perangkat</Text>
                 <Text style={{fontFamily:'Philosopher-Bold', fontSize:24, marginTop:5}}>{IDDevice}</Text>
-                <TouchableOpacity style={{backgroundColor:'white', paddingVertical:5, paddingHorizontal:10, borderRadius:10, position:'absolute', top:10, right:20 }} onPress={()=> navigation.navigate('QRScanCekTanah')}>
-                    <Text style={{fontFamily:'Poppins-Regular', color:'#0D986A', fontSize:12}}>Hubungkan</Text>
+                <TouchableOpacity style={{backgroundColor:'white', paddingVertical:5, paddingHorizontal:10, borderRadius:10, position:'absolute', top:10, right:20 }} onPress={()=> AmbilDataDevice()}>
+                    <Text style={{fontFamily:'Poppins-Regular', color:'#0D986A', fontSize:12}}>Ambil Data</Text>
                 </TouchableOpacity>
                 <Text style={{fontFamily:'Poppins-Regular', fontSize:12, marginTop:40}}>STATUS</Text>
                 <Text style={{fontFamily:'Poppins-Bold', fontSize:14, marginTop:0}}>{StatusDevice}</Text>
@@ -351,15 +357,15 @@ const CekTanah = ({navigation, route}) => {
                 <Text style={styles.DataSensorText}>Data Sensor</Text>
                 <View style={{flexDirection:'row', alignItems:'center', justifyContent:'center'}}>
                     <View style={{marginTop:10, flex:2, alignItems:'center'}}>
-                        <Text style={styles.NilaiSensor}>{Nitrogen} ml</Text>
+                        <Text style={styles.NilaiSensor}>{Nitrogen} mg/L</Text>
                         <Text style={{fontFamily:'Poppins-Regular', color:'black', fontSize:12}}>Nitrogen</Text>
                     </View>
                     <View style={{marginTop:10, flex:2, alignItems:'center'}}>
-                        <Text style={styles.NilaiSensor}>{Phospor}%</Text>
+                        <Text style={styles.NilaiSensor}>{Phospor} mg/L</Text>
                         <Text style={{fontFamily:'Poppins-Regular', color:'black', fontSize:12}}>Phosphorus</Text>
                     </View>
                     <View style={{marginTop:10, flex:2, alignItems:'center'}}>
-                        <Text style={styles.NilaiSensor}>{Kalium} mg</Text>
+                        <Text style={styles.NilaiSensor}>{Kalium} mg/L</Text>
                         <Text style={{fontFamily:'Poppins-Regular', color:'black', fontSize:12}}>Kalium</Text>
                     </View>
                 </View>
@@ -385,7 +391,25 @@ const CekTanah = ({navigation, route}) => {
                         <Text style={{fontFamily:'Poppins-Regular', fontSize:12}}>(Kandungan Mikro Organisme)</Text>
                     </View>
                     <View style={{flex:1, alignItems:'flex-end', justifyContent:'center'}}>
-                        <Text style={{fontFamily:'Poppins-Bold', fontSize:24, color:'#0D986A'}}>{Mikroorganisme}%</Text>
+                        <Text style={{fontFamily:'Poppins-Bold', fontSize:18, color:'#0D986A'}}>{Mikroorganisme} us/cm</Text>
+                    </View>
+                </View>
+                <View style={styles.BoxHasilBawah}>
+                    <View style={{flex:3.5}}>
+                        <Text style={styles.DataSensorText}>Tingkat Salinitas Tanah</Text>
+                        <Text style={{fontFamily:'Poppins-Regular', fontSize:12}}>(Kadar Garam)</Text>
+                    </View>
+                    <View style={{flex:1, alignItems:'flex-end', justifyContent:'center'}}>
+                        <Text style={{fontFamily:'Poppins-Bold', fontSize:18, color:'#0D986A'}}>{Salinitas} %</Text>
+                    </View>
+                </View>
+                <View style={styles.BoxHasilBawah}>
+                    <View style={{flex:3.5}}>
+                        <Text style={styles.DataSensorText}>TDS</Text>
+                        <Text style={{fontFamily:'Poppins-Regular', fontSize:12}}>(Total Dissolved Solid)</Text>
+                    </View>
+                    <View style={{flex:1, alignItems:'flex-end', justifyContent:'center'}}>
+                        <Text style={{fontFamily:'Poppins-Bold', fontSize:18, color:'#0D986A'}}>{TDS} %</Text>
                     </View>
                 </View>
                 
